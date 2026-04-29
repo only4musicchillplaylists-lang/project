@@ -1,76 +1,93 @@
-from machine import Pin,PWM #importing PIN and PWM
-import time #importing time
-import utime
+from machine import Pin, PWM
+import time
 
-# Defining motor pins
-motor1=Pin(10,Pin.OUT)
-motor2=Pin(11,Pin.OUT)
-motor3=Pin(12,Pin.OUT)
-motor4=Pin(13,Pin.OUT)
-# Defining enable pins and PWM object
-enable1=PWM(Pin(6))
-enable2=PWM(Pin(7))
+# ----- IR Sensors -----
+S1 = Pin(2, Pin.IN)
+S2 = Pin(3, Pin.IN)
+S3 = Pin(4, Pin.IN)
+S4 = Pin(5, Pin.IN)
+S5 = Pin(6, Pin.IN)
 
-# Defining  right and left IR digital pins as input
-right_ir = Pin(2, Pin.IN)
-left_ir = Pin(3, Pin.IN)
+# ----- Motor Pins -----
+IN1 = Pin(10, Pin.OUT)
+IN2 = Pin(11, Pin.OUT)
+IN3 = Pin(12, Pin.OUT)
+IN4 = Pin(13, Pin.OUT)
 
-# Defining frequency for enable pins
-enable1.freq(1000)
-enable2.freq(1000)
+ENA = PWM(Pin(14))
+ENB = PWM(Pin(15))
 
-# Setting maximum duty cycle for maximum speed
-enable1.duty_u16(65025)
-enable2.duty_u16(65025)
+ENA.freq(1000)
+ENB.freq(1000)
 
-# Forward
-def move_forward():
-    motor1.low()
-    motor2.high()
-    motor3.high()
-    motor4.low()
-   
-# Backward
-def move_backward():
-    motor1.high()
-    motor2.low()
-    motor3.low()
-    motor4.high()
-   
-#Turn Right
-def turn_right():
-    motor1.low()
-    motor2.high()
-    motor3.low()
-    motor4.high()
-   
-#Turn Left
-def turn_left():
-    motor1.high()
-    motor2.low()
-    motor3.high()
-    motor4.low()
-   
-#Stop
+# Speed (0–65535)
+speed = 30000
+ENA.duty_u16(speed)
+ENB.duty_u16(speed)
+
+# ----- Motor Functions -----
+def forward():
+    IN1.high()
+    IN2.low()
+    IN3.high()
+    IN4.low()
+
 def stop():
-    motor1.low()
-    motor2.low()
-    motor3.low()
-    motor4.low()
-   
+    IN1.low()
+    IN2.low()
+    IN3.low()
+    IN4.low()
+
+def left():
+    IN1.low()
+    IN2.high()
+    IN3.high()
+    IN4.low()
+
+def right():
+    IN1.high()
+    IN2.low()
+    IN3.low()
+    IN4.high()
+
+def sharp_left():
+    IN1.low()
+    IN2.high()
+    IN3.high()
+    IN4.low()
+
+def sharp_right():
+    IN1.high()
+    IN2.low()
+    IN3.low()
+    IN4.high()
+
+# ----- Main Loop -----
 while True:
-   
-    right_val=right_ir.value() #Getting right IR value(0 or 1)
-    left_val=left_ir.value() #Getting left IR value(0 or 1)
-   
-    print(str(right_val)+"-"+str(left_val))
-   
-    # Controlling robot direction based on IR value
-    if right_val==0 and left_val==0:
-        move_forward()
-    elif right_val==1 and left_val==0:
-        turn_right()
-    elif right_val==0 and left_val==1:
-        turn_left()
+    s1 = S1.value()
+    s2 = S2.value()
+    s3 = S3.value()
+    s4 = S4.value()
+    s5 = S5.value()
+
+    # Black line = 0
+
+    if s3 == 0:
+        forward()
+
+    elif s2 == 0:
+        left()
+
+    elif s4 == 0:
+        right()
+
+    elif s1 == 0:
+        sharp_left()
+
+    elif s5 == 0:
+        sharp_right()
+
     else:
-        stop()
+        stop()   # or search logic
+
+    time.sleep(0.01)
